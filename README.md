@@ -25,4 +25,4 @@ be found at <https://hexdocs.pm/carbonex>.
 Carbonex.add_template(finch_name, template_file_name)
 |> Carbonex.render_template(finch_name, request_body)
 |> Carbonex.get_document(finch_name)
-    ```
+```

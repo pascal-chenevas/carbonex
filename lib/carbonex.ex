@@ -7,6 +7,17 @@ defmodule Carbonex do
   """
 
   @doc """
+  create_document/3 create a document based on a givem template
+  and its data
+  """
+  def create(finch_name, template_file_name, request_body) do
+    Carbonex.add_template(finch_name, template_file_name)
+    |> Carbonex.render_template(finch_name, request_body)
+    |> Carbonex.get_document(finch_name)
+  end
+
+  
+  @doc """
   add_template/2 add a carbone template to the Carbone service
   """
   def add_template(finch_name, template_file_name)do
@@ -111,17 +122,6 @@ defmodule Carbonex do
   end
   
   @doc """
-  extract_template_id_from_response/1 extract the template_id
-  from the response body
-  """
-  def extract_template_id_from_response(response) do
-    case decode_json(response) do
-      {:ok, map} -> map["data"]["templateId"]
-      _ -> nil
-    end    
-  end
-
-  @doc """
   get_render_id_from_response/1 fetch the render_id from
   the response which is a map like:
   %Finch.Response{
@@ -137,17 +137,6 @@ defmodule Carbonex do
       true -> extract_render_id_from_response(response)
       false -> response
     end
-  end
-
-  @doc """
-  extract_render_id_from_response/1 extract the render_id
-  from the response body
-  """
-  def extract_render_id_from_response(response) do
-    case decode_json(response) do
-      {:ok, map} -> map["data"]["renderId"]
-      _ -> nil
-    end    
   end
 
   ## Private functions
@@ -173,11 +162,25 @@ defmodule Carbonex do
     end
   end
 
+  defp extract_render_id_from_response(response) do
+    case decode_json(response) do
+      {:ok, map} -> map["data"]["renderId"]
+      _ -> nil
+    end    
+  end
+
   defp get_api_token do
     System.get_env("CARBONE_TOKEN") ||
     raise """
     environment variable CARBONE_TOKEN is missing.
     """
+  end
+
+  defp extract_template_id_from_response(response) do
+    case decode_json(response) do
+      {:ok, map} -> map["data"]["templateId"]
+      _ -> nil
+    end    
   end
 
   defp get_carbone_version do

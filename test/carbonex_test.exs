@@ -39,7 +39,7 @@ defmodule CarbonexTest do
       status: 200
     }
 
-    assert Carbonex.get_template_id_from_response(response) === "12345uMTEuMzAgICAgNQwu8xOLHsfcOSAcmVwb3J0"
+    assert Carbonex.get_id_from_response(response) === "12345uMTEuMzAgICAgNQwu8xOLHsfcOSAcmVwb3J0"
   end
 
   test "get the template_id from a response is nil" do
@@ -49,7 +49,7 @@ defmodule CarbonexTest do
       status: 200
     }
 
-    assert Carbonex.get_template_id_from_response(response) === nil
+    assert Carbonex.get_id_from_response(response) === nil
   end
 
   test "get the render_id from a response succeed" do
@@ -59,7 +59,7 @@ defmodule CarbonexTest do
       status: 200
     }
 
-    assert Carbonex.get_render_id_from_response(response) === "MTAuMjAuMTEuMzAgICAgNQwu8xyyJah9JOLHsfcOSAcmVwb3J0.pdf"
+    assert Carbonex.get_id_from_response(response) === "MTAuMjAuMTEuMzAgICAgNQwu8xyyJah9JOLHsfcOSAcmVwb3J0.pdf"
   end
 
   test "get the render_id from a response is nil" do
@@ -69,7 +69,7 @@ defmodule CarbonexTest do
       status: 200
     }
 
-    assert Carbonex.get_template_id_from_response(response) === nil
+    assert Carbonex.get_id_from_response(response) === nil
   end
   
 end

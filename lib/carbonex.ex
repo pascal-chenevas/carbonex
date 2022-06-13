@@ -148,30 +148,19 @@ defmodule Carbonex do
     end
   end
 
-<<<<<<< HEAD
-  defp get_api_token do
-    System.get_env("CARBONE_TOKEN") ||
-      raise """
-      environment variable CARBONE_TOKEN is missing.
-      """
-  end
-
   defp extract_id_from_response(response) do
-=======
-  defp extract_template_id_from_response(response) do
->>>>>>> 4867422aa5cf135ba63c292bde27a6aa04618e4d
     case decode_json(response) do
       {:ok, %{"data" => %{"templateId" => id}}} -> id
       {:ok, %{"data" => %{"renderId" => id}}} -> id
       _ -> nil
     end
   end
-  
+
   defp get_api_token do
     System.get_env("CARBONE_TOKEN") ||
-    raise """
-    environment variable CARBONE_TOKEN is missing.
-    """
+      raise """
+      environment variable CARBONE_TOKEN is missing.
+      """
   end
 
   defp get_carbone_version do

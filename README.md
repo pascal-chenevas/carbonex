@@ -1,3 +1,5 @@
+[![Elixir CI](https://github.com/pascal-chenevas/carbonex/actions/workflows/elixir.yml/badge.svg?branch=main)](https://github.com/pascal-chenevas/carbonex/actions/workflows/elixir.yml)
+
 # Carbonex
 
 **TODO: Add description**

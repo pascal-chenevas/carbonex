@@ -169,18 +169,18 @@ defmodule Carbonex do
     end    
   end
 
+ defp extract_template_id_from_response(response) do
+    case decode_json(response) do
+      {:ok, map} -> map["data"]["templateId"]
+      _ -> nil
+    end    
+  end
+  
   defp get_api_token do
     System.get_env("CARBONE_TOKEN") ||
     raise """
     environment variable CARBONE_TOKEN is missing.
     """
-  end
-
-  defp extract_template_id_from_response(response) do
-    case decode_json(response) do
-      {:ok, map} -> map["data"]["templateId"]
-      _ -> nil
-    end    
   end
 
   defp get_carbone_version do

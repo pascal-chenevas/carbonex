@@ -7,7 +7,7 @@ defmodule Carbonex do
   """
 
   @doc """
-  create_document/3 create a document based on a givem template
+  create/3 create a document based on a givem template
   and its data
   """
   def create(finch_name, template_file_name, request_body) do

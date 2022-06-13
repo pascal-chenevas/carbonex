@@ -169,7 +169,7 @@ defmodule Carbonex do
     end    
   end
 
- defp extract_template_id_from_response(response) do
+  defp extract_template_id_from_response(response) do
     case decode_json(response) do
       {:ok, map} -> map["data"]["templateId"]
       _ -> nil

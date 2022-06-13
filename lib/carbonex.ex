@@ -1,5 +1,4 @@
 defmodule Carbonex do
-  
   @moduledoc """
   Documentation for `Carbonex`.
 
@@ -11,16 +10,15 @@ defmodule Carbonex do
   and its data
   """
   def create(finch_name, template_file_name, request_body) do
-    Carbonex.add_template(finch_name, template_file_name)
-    |> Carbonex.render_template(finch_name, request_body)
-    |> Carbonex.get_document(finch_name)
+    add_template(finch_name, template_file_name)
+    |> render_template(finch_name, request_body)
+    |> get_document(finch_name)
   end
 
-  
   @doc """
   add_template/2 add a carbone template to the Carbone service
   """
-  def add_template(finch_name, template_file_name)do
+  def add_template(finch_name, template_file_name) do
     if File.exists?(template_file_name) do
       base_uri = get_carbone_serice_base_uri()
       api_token = get_api_token()
@@ -28,23 +26,25 @@ defmodule Carbonex do
       body_stream = Multipart.body_stream(multipart)
       content_length = Multipart.content_length(multipart)
       content_type = Multipart.content_type(multipart, "multipart/form-data")
+
       headers = [
-	{"Content-Type", content_type},
-	{"Content-Length", to_string(content_length)},
-	{"Authorization", "Bearer #{api_token}"},
-	{"carbone-version", "3"}
+        {"Content-Type", content_type},
+        {"Content-Length", to_string(content_length)},
+        {"Authorization", "Bearer #{api_token}"},
+        {"carbone-version", "3"}
       ]
-      
-      result = Finch.build(:post, "#{base_uri}/template", headers, {:stream, body_stream})
-      |> Finch.request(finch_name)
+
+      result =
+        Finch.build(:post, "#{base_uri}/template", headers, {:stream, body_stream})
+        |> Finch.request(finch_name)
 
       case result do
-	{:ok, response} ->
-	  response
-	  |> get_template_id_from_response
-	_ -> result
+        {:ok, response} ->
+          get_id_from_response(response)
+
+        _ ->
+          nil
       end
-      
     else
       {:error, "File #{template_file_name} doesn't exists"}
     end
@@ -55,11 +55,13 @@ defmodule Carbonex do
   """
   def render_template(template_id, finch_name, data) do
     result = send_data_to_renderer(finch_name, template_id, data)
+
     case result do
       {:ok, response} ->
-	response
-	|> get_render_id_from_response
-      _ -> result
+        get_id_from_response(response)
+
+      _ ->
+        result
     end
   end
 
@@ -69,24 +71,14 @@ defmodule Carbonex do
   def get_document(render_id, finch_name) do
     base_uri = get_carbone_serice_base_uri()
     api_token = get_api_token()
+
     headers = [
       {"Authorization", "Bearer #{api_token}"},
       {"carbone-version", get_carbone_version()}
     ]
+
     Finch.build(:get, "#{base_uri}/render/#{render_id}", headers)
     |> Finch.request(finch_name)
-  end
-    
-  @doc """
-   create_multipart/1 set the template to the multipart form/data
-  """
-  def create_multipart(template_file_name) do
-    if File.exists?(template_file_name) do
-      Multipart.new()
-      |> Multipart.add_part(Multipart.Part.file_field(template_file_name, :template))
-    else
-      {:error, "File #{template_file_name} doesn't exists"}
-   end
   end
 
   @doc """
@@ -94,11 +86,11 @@ defmodule Carbonex do
   service has proceeded the request successfuly
   """
   def response_succeeded?(response) do
-     case decode_json(response) do
-       {:error,_} -> false
-       {:ok, %{"success" => true}} -> true
-       {:ok, %{"success" => false}} -> false
-	 _ -> false
+    case decode_json(response) do
+      {:error, _} -> false
+      {:ok, %{"success" => true}} -> true
+      {:ok, %{"success" => false}} -> false
+      _ -> false
     end
   end
 
@@ -113,33 +105,23 @@ defmodule Carbonex do
     status: 200
   }
   """
-  def get_template_id_from_response(response) do    
+  def get_id_from_response(response) do
     case response_succeeded?(response) do
-      true -> extract_template_id_from_response(response)
-      false -> response
-    end
-    
-  end
-  
-  @doc """
-  get_render_id_from_response/1 fetch the render_id from
-  the response which is a map like:
-  %Finch.Response{
-    body: "{\"success\":true,\"data\":{\"renderId\":\"MTAuMjAuMTEuMzAgICAgNQwu8xyyJah9JOLHsfcOSAcmVwb3J0.pdf\"}}",
-    headers: [
-      .....
-    ],
-    status: 200
-  }
-  """
-  def get_render_id_from_response(response) do
-    case response_succeeded?(response) do
-      true -> extract_render_id_from_response(response)
+      true -> extract_id_from_response(response)
       false -> response
     end
   end
 
   ## Private functions
+  defp create_multipart(template_file_name) do
+    if File.exists?(template_file_name) do
+      Multipart.new()
+      |> Multipart.add_part(Multipart.Part.file_field(template_file_name, :template))
+    else
+      {:error, "File #{template_file_name} doesn't exists"}
+    end
+  end
+
   defp decode_json(response) do
     Jason.decode(response.body)
   end
@@ -147,40 +129,38 @@ defmodule Carbonex do
   defp send_data_to_renderer(finch_name, template_id, data) do
     base_uri = get_carbone_serice_base_uri()
     api_token = get_api_token()
+
     headers = [
-	{"Content-Type", "application/json"},
-	{"Authorization", "Bearer #{api_token}"},
-	{"carbone-version", get_carbone_version()}
-      ]
+      {"Content-Type", "application/json"},
+      {"Authorization", "Bearer #{api_token}"},
+      {"carbone-version", get_carbone_version()}
+    ]
 
-    result = Jason.encode(data)
-    case result do
+    data
+    |> Jason.encode(data)
+    |> case do
       {:ok, value} ->
-	Finch.build(:post, "#{base_uri}/render/#{template_id}", headers, value)
-	|> Finch.request(finch_name)
-	_ -> result
-    end
-  end
+        Finch.build(:post, "#{base_uri}/render/#{template_id}", headers, value)
+        |> Finch.request(finch_name)
 
-  defp extract_render_id_from_response(response) do
-    case decode_json(response) do
-      {:ok, map} -> map["data"]["renderId"]
-      _ -> nil
-    end    
+      _ ->
+        nil
+    end
   end
 
   defp get_api_token do
     System.get_env("CARBONE_TOKEN") ||
-    raise """
-    environment variable CARBONE_TOKEN is missing.
-    """
+      raise """
+      environment variable CARBONE_TOKEN is missing.
+      """
   end
 
-  defp extract_template_id_from_response(response) do
+  defp extract_id_from_response(response) do
     case decode_json(response) do
-      {:ok, map} -> map["data"]["templateId"]
+      {:ok, %{"data" => %{"templateId" => id}}} -> id
+      {:ok, %{"data" => %{"renderId" => id}}} -> id
       _ -> nil
-    end    
+    end
   end
 
   defp get_carbone_version do
@@ -190,5 +170,4 @@ defmodule Carbonex do
   defp get_carbone_serice_base_uri do
     System.get_env("CARBONE_BASE_URI") || "https://render.carbone.io"
   end
-  
 end

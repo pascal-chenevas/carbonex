@@ -2,7 +2,6 @@
 
 # Carbonex
 
-**TODO: Add description**
 `Carbonex` is a small library that help to create a document rendered by https://carbone.io
 
 ## Installation

@@ -116,12 +116,8 @@ defmodule Carbonex do
 
   ## Private functions
   defp create_multipart(template_file_name) do
-    if File.exists?(template_file_name) do
-      Multipart.new()
-      |> Multipart.add_part(Multipart.Part.file_field(template_file_name, :template))
-    else
-      {:error, "File #{template_file_name} doesn't exists"}
-    end
+    Multipart.new()
+    |> Multipart.add_part(Multipart.Part.file_field(template_file_name, :template))
   end
 
   defp decode_json(response) do

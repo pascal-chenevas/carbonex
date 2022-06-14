@@ -34,11 +34,9 @@ defmodule Carbonex do
         {"carbone-version", "3"}
       ]
 
-      result =
-        Finch.build(:post, "#{base_uri}/template", headers, {:stream, body_stream})
-        |> Finch.request(finch_name)
-
-      case result do
+      Finch.build(:post, "#{base_uri}/template", headers, {:stream, body_stream})
+      |> Finch.request(finch_name)
+      |> case do
         {:ok, response} ->
           get_id_from_response(response)
 
@@ -79,6 +77,10 @@ defmodule Carbonex do
 
     Finch.build(:get, "#{base_uri}/render/#{render_id}", headers)
     |> Finch.request(finch_name)
+    |> case do
+      {:ok, response} -> response.body
+      _ -> nil
+    end
   end
 
   @doc """

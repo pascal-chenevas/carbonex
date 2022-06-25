@@ -6,22 +6,20 @@ defmodule Carbonex do
   """
 
   @doc """
-  create/3 create a document based on a givem template
+  render/4 render a document based on a givem template
   and its data
   """
-  def create(finch_name, template_file_name, request_body) do
-    add_template(finch_name, template_file_name)
-    |> render_template(finch_name, request_body)
-    |> get_document(finch_name)
+  def render(finch_name, environement = %Carbonex.Environment{}, template_file_name, request_body) do
+    add_template(finch_name, environement, template_file_name)
+    |> render_template(finch_name, environement, request_body)
+    |> get_document(finch_name, environement)
   end
 
   @doc """
-  add_template/2 add a carbone template to the Carbone service
+  add_template/3 add a carbone template to the Carbone service
   """
-  def add_template(finch_name, template_file_name) do
+  def add_template(finch_name, environement = %Carbonex.Environment{}, template_file_name) do
     if File.exists?(template_file_name) do
-      base_uri = get_carbone_serice_base_uri()
-      api_token = get_api_token()
       multipart = create_multipart(template_file_name)
       body_stream = Multipart.body_stream(multipart)
       content_length = Multipart.content_length(multipart)
@@ -30,11 +28,11 @@ defmodule Carbonex do
       headers = [
         {"Content-Type", content_type},
         {"Content-Length", to_string(content_length)},
-        {"Authorization", "Bearer #{api_token}"},
-        {"carbone-version", "3"}
+        {"Authorization", "Bearer #{environement.token}"},
+        {"carbone-version", environement.version}
       ]
 
-      Finch.build(:post, "#{base_uri}/template", headers, {:stream, body_stream})
+      Finch.build(:post, "#{environement.base_uri}/template", headers, {:stream, body_stream})
       |> Finch.request(finch_name)
       |> case do
         {:ok, response} ->
@@ -49,10 +47,10 @@ defmodule Carbonex do
   end
 
   @doc """
-  render_template/3 render the data using a carbone template
+  render_template/4 render the data using a carbone template
   """
-  def render_template(template_id, finch_name, data) do
-    result = send_data_to_renderer(finch_name, template_id, data)
+  def render_template(template_id, finch_name, environment = %Carbonex.Environment{}, data) do
+    result = send_data_to_renderer(finch_name, environment, template_id, data)
 
     case result do
       {:ok, response} ->
@@ -64,18 +62,15 @@ defmodule Carbonex do
   end
 
   @doc """
-  get_document/2 get the 'final' file from the carbone service
+  get_document/3 get the 'final' file from the carbone service
   """
-  def get_document(render_id, finch_name) do
-    base_uri = get_carbone_serice_base_uri()
-    api_token = get_api_token()
-
+  def get_document(render_id, finch_name, environment = %Carbonex.Environment{}) do
     headers = [
-      {"Authorization", "Bearer #{api_token}"},
-      {"carbone-version", get_carbone_version()}
+      {"Authorization", "Bearer #{environment.token}"},
+      {"carbone-version", environment.version}
     ]
 
-    Finch.build(:get, "#{base_uri}/render/#{render_id}", headers)
+    Finch.build(:get, "#{environment.base_uri}/render/#{render_id}", headers)
     |> Finch.request(finch_name)
     |> case do
       {:ok, response} -> response.body
@@ -124,21 +119,18 @@ defmodule Carbonex do
     Jason.decode(response.body)
   end
 
-  defp send_data_to_renderer(finch_name, template_id, data) do
-    base_uri = get_carbone_serice_base_uri()
-    api_token = get_api_token()
-
+  defp send_data_to_renderer(finch_name, environment = %Carbonex.Environment{}, template_id, data) do
     headers = [
       {"Content-Type", "application/json"},
-      {"Authorization", "Bearer #{api_token}"},
-      {"carbone-version", get_carbone_version()}
+      {"Authorization", "Bearer #{environment.token}"},
+      {"carbone-version", environment.version}
     ]
 
     data
     |> Jason.encode(data)
     |> case do
       {:ok, value} ->
-        Finch.build(:post, "#{base_uri}/render/#{template_id}", headers, value)
+        Finch.build(:post, "#{environment.base_uri}/render/#{template_id}", headers, value)
         |> Finch.request(finch_name)
 
       _ ->
@@ -152,20 +144,5 @@ defmodule Carbonex do
       {:ok, %{"data" => %{"renderId" => id}}} -> id
       _ -> nil
     end
-  end
-
-  defp get_api_token do
-    System.get_env("CARBONE_TOKEN") ||
-      raise """
-      environment variable CARBONE_TOKEN is missing.
-      """
-  end
-
-  defp get_carbone_version do
-    System.get_env("CARBONE_VERSION") || "3"
-  end
-
-  defp get_carbone_serice_base_uri do
-    System.get_env("CARBONE_BASE_URI") || "https://render.carbone.io"
   end
 end

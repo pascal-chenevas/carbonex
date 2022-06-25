@@ -14,7 +14,8 @@ defmodule Carbonex.MixProject do
   # Run "mix help compile.app" to learn about applications.
   def application do
     [
-      extra_applications: [:logger]
+      extra_applications: [:logger],
+     # mod: {MyApp.Application, []}
     ]
   end
 
@@ -23,7 +24,8 @@ defmodule Carbonex.MixProject do
     [
       {:jason, "~> 1.3"},
       {:finch, "~> 0.12.0"},
-      {:multipart, "~> 0.3.0"}
+      {:multipart, "~> 0.3.0"},
+#      {:environment, path: "../environment"}
     ]
   end
 end

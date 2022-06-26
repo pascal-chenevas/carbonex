@@ -8,40 +8,40 @@ defmodule Carbonex.RequestBody do
 
   def to_json(req_body = %Carbonex.RequestBody{}) do
     req_body
-    |> Map.from_struct
-    |> prepare_request_body
-    |> Jason.encode
+    |> camelize_keys
+    |> Jason.encode()
   end
 
-  ##### private functions
-
-  defp prepare_request_body(req_body) do
-    Enum.into(req_body, %{}, fn {k, v} -> {camelize(k), v} end)
+  def camelize_keys(req_body = %{convert_to: convert_format, data: _})
+      when is_binary(convert_format) do
+    req_body
+    |> Map.from_struct()
+    |> Enum.into(%{}, fn {k, v} -> {camelize_key(k), v} end)
   end
 
-  defp camelize(key) when is_atom(key) do
-    key
-    |> Atom.to_string
-    |> Macro.camelize
-    |> first_letter_to_lowercase
-  end
+  # private functions
 
-  defp get_first_letter_to_lowercase(value) do
-    value
-    |> String.first
-    |> String.downcase
-  end
-
-  defp get_last_part_string(value) do
-    string_length = String.length(value)
-
-    value
-    |> String.slice(1, string_length)
+  defp camelize_key(key) when is_atom(key) do
+    value = Macro.camelize(Atom.to_string(key))
+    first_letter = first_letter_to_lowercase(value)
+    last_part = last_part(value)
+    first_letter <> last_part
   end
 
   defp first_letter_to_lowercase(value) do
-    first_letter = get_first_letter_to_lowercase(value)
-    last_part = get_last_part_string(value)
-    first_letter <> last_part
+    value
+    |> String.first()
+    |> String.downcase()
+  end
+
+  defp last_part(value) do
+    string_length = String.length(value)
+
+    if string_length > 0 do
+      value
+      |> String.slice(1, string_length)
+    else
+      value
+    end
   end
 end

@@ -9,7 +9,12 @@ defmodule Carbonex do
   render/4 render a document based on a givem template
   and its data
   """
-  def render(finch_name, environement = %Carbonex.Environment{}, template_file_name, request_body) do
+  def render(
+        finch_name,
+        environement = %Carbonex.Environment{},
+        template_file_name,
+        request_body = %Carbonex.RequestBody{}
+      ) do
     add_template(finch_name, environement, template_file_name)
     |> render_template(finch_name, environement, request_body)
     |> get_document(finch_name, environement)
@@ -49,8 +54,13 @@ defmodule Carbonex do
   @doc """
   render_template/4 render the data using a carbone template
   """
-  def render_template(template_id, finch_name, environment = %Carbonex.Environment{}, data) do
-    result = send_data_to_renderer(finch_name, environment, template_id, data)
+  def render_template(
+        template_id,
+        finch_name,
+        environment = %Carbonex.Environment{},
+        req_body = %Carbonex.RequestBody{}
+      ) do
+    result = send_data_to_renderer(finch_name, environment, template_id, req_body)
 
     case result do
       {:ok, response} ->
@@ -119,16 +129,21 @@ defmodule Carbonex do
     Jason.decode(response.body)
   end
 
-  defp send_data_to_renderer(finch_name, environment = %Carbonex.Environment{}, template_id, data) do
+  defp send_data_to_renderer(
+         finch_name,
+         environment = %Carbonex.Environment{},
+         template_id,
+         req_body = %Carbonex.RequestBody{}
+       ) do
     headers = [
       {"Content-Type", "application/json"},
       {"Authorization", "Bearer #{environment.token}"},
       {"carbone-version", environment.version}
     ]
 
-    data
-    |> Jason.encode(data)
-    |> case do
+    body = Carbonex.RequestBody.to_json(req_body)
+
+    case body do
       {:ok, value} ->
         Finch.build(:post, "#{environment.base_uri}/render/#{template_id}", headers, value)
         |> Finch.request(finch_name)

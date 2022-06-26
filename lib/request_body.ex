@@ -8,9 +8,9 @@ defmodule Carbonex.RequestBody do
 
   def to_json(req_body = %Carbonex.RequestBody{}) do
     req_body
-    |> Map.from_struct()
+    |> Map.from_struct
     |> prepare_request_body
-    |> Jason.encode()
+    |> Jason.encode
   end
 
   ##### private functions
@@ -21,15 +21,15 @@ defmodule Carbonex.RequestBody do
 
   defp camelize(key) when is_atom(key) do
     key
-    |> Atom.to_string()
-    |> Macro.camelize()
+    |> Atom.to_string
+    |> Macro.camelize
     |> first_letter_to_lowercase
   end
 
   defp get_first_letter_to_lowercase(value) do
     value
-    |> String.first()
-    |> String.downcase()
+    |> String.first
+    |> String.downcase
   end
 
   defp get_last_part_string(value) do

@@ -15,7 +15,7 @@ defmodule Carbonex.MixProject do
   def application do
     [
       extra_applications: [:logger],
-     # mod: {MyApp.Application, []}
+      mod: {Carbonex.Application, []}
     ]
   end
 
@@ -24,8 +24,7 @@ defmodule Carbonex.MixProject do
     [
       {:jason, "~> 1.3"},
       {:finch, "~> 0.12.0"},
-      {:multipart, "~> 0.3.0"},
-#      {:environment, path: "../environment"}
+      {:multipart, "~> 0.3.0"}
     ]
   end
 end

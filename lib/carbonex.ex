@@ -6,24 +6,23 @@ defmodule Carbonex do
   """
 
   @doc """
-  render/4 render a document based on a givem template
+  render/3 render a document based on a givem template
   and its data
   """
   def render(
-        finch_name,
         environement = %Carbonex.Environment{},
         template_file_name,
         request_body = %Carbonex.RequestBody{}
       ) do
-    add_template(finch_name, environement, template_file_name)
-    |> render_template(finch_name, environement, request_body)
-    |> get_document(finch_name, environement)
+    add_template(environement, template_file_name)
+    |> render_template(environement, request_body)
+    |> get_document(environement)
   end
 
   @doc """
-  add_template/3 add a carbone template to the Carbone service
+  add_template/2 add a carbone template to the Carbone service
   """
-  def add_template(finch_name, environement = %Carbonex.Environment{}, template_file_name) do
+  def add_template(environement = %Carbonex.Environment{}, template_file_name) do
     if File.exists?(template_file_name) do
       multipart = create_multipart(template_file_name)
       body_stream = Multipart.body_stream(multipart)
@@ -38,7 +37,7 @@ defmodule Carbonex do
       ]
 
       Finch.build(:post, "#{environement.base_uri}/template", headers, {:stream, body_stream})
-      |> Finch.request(finch_name)
+      |> Finch.request(CarboneHttp)
       |> case do
         {:ok, response} ->
           get_id_from_response(response)
@@ -52,15 +51,14 @@ defmodule Carbonex do
   end
 
   @doc """
-  render_template/4 render the data using a carbone template
+  render_template/3 render the data using a carbone template
   """
   def render_template(
         template_id,
-        finch_name,
         environment = %Carbonex.Environment{},
         req_body = %Carbonex.RequestBody{}
       ) do
-    result = send_data_to_renderer(finch_name, environment, template_id, req_body)
+    result = send_data_to_renderer(environment, template_id, req_body)
 
     case result do
       {:ok, response} ->
@@ -72,16 +70,16 @@ defmodule Carbonex do
   end
 
   @doc """
-  get_document/3 get the 'final' file from the carbone service
+  get_document/2 get the 'final' file from the carbone service
   """
-  def get_document(render_id, finch_name, environment = %Carbonex.Environment{}) do
+  def get_document(render_id, environment = %Carbonex.Environment{}) do
     headers = [
       {"Authorization", "Bearer #{environment.token}"},
       {"carbone-version", environment.version}
     ]
 
     Finch.build(:get, "#{environment.base_uri}/render/#{render_id}", headers)
-    |> Finch.request(finch_name)
+    |> Finch.request(CarboneHttp)
     |> case do
       {:ok, response} -> response.body
       _ -> nil
@@ -130,7 +128,6 @@ defmodule Carbonex do
   end
 
   defp send_data_to_renderer(
-         finch_name,
          environment = %Carbonex.Environment{},
          template_id,
          req_body = %Carbonex.RequestBody{}
@@ -146,7 +143,7 @@ defmodule Carbonex do
     case body do
       {:ok, value} ->
         Finch.build(:post, "#{environment.base_uri}/render/#{template_id}", headers, value)
-        |> Finch.request(finch_name)
+        |> Finch.request(CarboneHttp)
 
       _ ->
         nil

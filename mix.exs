@@ -24,7 +24,8 @@ defmodule Carbonex.MixProject do
     [
       {:jason, "~> 1.3"},
       {:finch, "~> 0.12.0"},
-      {:multipart, "~> 0.3.0"}
+      {:multipart, "~> 0.3.0"},
+      {:recase, "~> 0.5"}
     ]
   end
 end

@@ -1,4 +1,8 @@
 defmodule Carbonex do
+  alias Carbonex.Environment
+  alias Carbonex.RequestBody
+  alias Carbonex.HttpHeaders
+
   @moduledoc """
   Documentation for `Carbonex`.
 
@@ -10,9 +14,9 @@ defmodule Carbonex do
   and its data
   """
   def render(
-        environement = %Carbonex.Environment{},
+        environement = %Environment{},
         template_file_name,
-        request_body = %Carbonex.RequestBody{}
+        request_body = %RequestBody{}
       ) do
     add_template(environement, template_file_name)
     |> render_template(environement, request_body)
@@ -22,19 +26,12 @@ defmodule Carbonex do
   @doc """
   add_template/2 add a carbone template to the Carbone service
   """
-  def add_template(environement = %Carbonex.Environment{}, template_file_name) do
+  def add_template(environement = %Environment{}, template_file_name) do
     if File.exists?(template_file_name) do
       multipart = create_multipart(template_file_name)
       body_stream = Multipart.body_stream(multipart)
-      content_length = Multipart.content_length(multipart)
-      content_type = Multipart.content_type(multipart, "multipart/form-data")
 
-      headers = [
-        {"Content-Type", content_type},
-        {"Content-Length", to_string(content_length)},
-        {"Authorization", "Bearer #{environement.token}"},
-        {"carbone-version", environement.version}
-      ]
+      headers = HttpHeaders.from_environment_for_multipart(environement, multipart)
 
       Finch.build(:post, "#{environement.base_uri}/template", headers, {:stream, body_stream})
       |> Finch.request(CarboneHttp)
@@ -55,8 +52,8 @@ defmodule Carbonex do
   """
   def render_template(
         template_id,
-        environment = %Carbonex.Environment{},
-        req_body = %Carbonex.RequestBody{}
+        environment = %Environment{},
+        req_body = %RequestBody{}
       ) do
     result = send_data_to_renderer(environment, template_id, req_body)
 
@@ -72,13 +69,10 @@ defmodule Carbonex do
   @doc """
   get_document/2 get the 'final' file from the carbone service
   """
-  def get_document(render_id, environment = %Carbonex.Environment{}) do
-    headers = [
-      {"Authorization", "Bearer #{environment.token}"},
-      {"carbone-version", environment.version}
-    ]
+  def get_document(render_id, env = %Environment{}) do
+    headers = HttpHeaders.from_environment(env)
 
-    Finch.build(:get, "#{environment.base_uri}/render/#{render_id}", headers)
+    Finch.build(:get, "#{env.base_uri}/render/#{render_id}", headers)
     |> Finch.request(CarboneHttp)
     |> case do
       {:ok, response} -> response.body
@@ -128,9 +122,9 @@ defmodule Carbonex do
   end
 
   defp send_data_to_renderer(
-         environment = %Carbonex.Environment{},
+         environment = %Environment{},
          template_id,
-         req_body = %Carbonex.RequestBody{}
+         req_body = %RequestBody{}
        ) do
     headers = [
       {"Content-Type", "application/json"},
@@ -138,7 +132,7 @@ defmodule Carbonex do
       {"carbone-version", environment.version}
     ]
 
-    body = Carbonex.RequestBody.to_json(req_body)
+    body = RequestBody.to_json(req_body)
 
     case body do
       {:ok, value} ->

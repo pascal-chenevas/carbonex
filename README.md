@@ -24,19 +24,6 @@ be found at <https://hexdocs.pm/carbonex>.
 ## Usage
 
 ```elixir
-# set up the API-Token to use against the service for authorization
-env = %Carbonex.Environment{token: "yor_token" }
-```
-```elixir
-# 
-data = %{}
-```
-```elixir
-# create a request body to send to the service 
-req_body = %Carbonex.RequestBody{convert_to: "pdf", data: data}
-```
-
-```elixir
-# send your data to the renderer sothat the service can generate the document
-Carbonex.render(env, "template.odt", req_body)
+request_body = %{"convertTo" => "pdf", "data" => data}
+Carbonex.create(finch_name, "path/to/template.odt", request_body)
 ```

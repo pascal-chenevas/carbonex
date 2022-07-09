@@ -24,6 +24,6 @@ be found at <https://hexdocs.pm/carbonex>.
 ## Usage
 
 ```elixir
-request_body = %{"convertTo" => "pdf", "data" => data}
+request_body = %{convert_to: => "pdf", data: data}
 Carbonex.create(finch_name, "path/to/template.odt", request_body)
 ```

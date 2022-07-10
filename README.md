@@ -38,6 +38,12 @@ req_body = %Carbonex.RequestBody{convert_to: "pdf", data: data}
 
 ```elixir
 # send your data to the renderer sothat the service can generate the document
-Carbonex.render(env, "template.odt", req_body)
+resp_content = Carbonex.render(env, "template/sample_template.odt", req_body)
+```
+
+or if you want to directly save the content to a file
+
+```elixir
+Carbonex.create_file(env, "template/sample_template.odt", req_body, "~/report.pdf")
 ```
 

@@ -14,26 +14,26 @@ defmodule Carbonex do
   and its data
   """
   def render(
-        environement = %Environment{},
+        env = %Environment{},
         template_file_name,
         request_body = %RequestBody{}
       ) do
-    add_template(environement, template_file_name)
-    |> render_template(environement, request_body)
-    |> get_document(environement)
+    add_template(env, template_file_name)
+    |> render_template(env, request_body)
+    |> get_document_data(env)
   end
 
   @doc """
   add_template/2 add a carbone template to the Carbone service
   """
-  def add_template(environement = %Environment{}, template_file_name) do
+  def add_template(env = %Environment{}, template_file_name) do
     if File.exists?(template_file_name) do
       multipart = create_multipart(template_file_name)
       body_stream = Multipart.body_stream(multipart)
 
-      headers = HttpHeaders.from_environment_for_multipart(environement, multipart)
+      headers = HttpHeaders.from_environment_for_multipart(env, multipart)
 
-      Finch.build(:post, "#{environement.base_uri}/template", headers, {:stream, body_stream})
+      Finch.build(:post, "#{env.base_uri}/template", headers, {:stream, body_stream})
       |> Finch.request(CarboneHttp)
       |> case do
         {:ok, response} ->
@@ -52,10 +52,10 @@ defmodule Carbonex do
   """
   def render_template(
         template_id,
-        environment = %Environment{},
+        env = %Environment{},
         req_body = %RequestBody{}
       ) do
-    result = send_data_to_renderer(environment, template_id, req_body)
+    result = send_data_to_renderer(env, template_id, req_body)
 
     case result do
       {:ok, response} ->
@@ -67,9 +67,9 @@ defmodule Carbonex do
   end
 
   @doc """
-  get_document/2 get the 'final' file from the carbone service
+  get_document_data/2 get the 'final' file from the carbone service
   """
-  def get_document(render_id, env = %Environment{}) do
+  def get_document_data(render_id, env = %Environment{}) do
     headers = HttpHeaders.from_environment(env)
 
     Finch.build(:get, "#{env.base_uri}/render/#{render_id}", headers)
@@ -111,6 +111,16 @@ defmodule Carbonex do
     end
   end
 
+  def create_file(
+        env = %Environment{},
+        template_file_name,
+        request_body = %RequestBody{},
+        file_name
+      ) do
+    render(env, template_file_name, request_body)
+    |> to_file(file_name)
+  end
+
   ## Private functions
   defp create_multipart(template_file_name) do
     Multipart.new()
@@ -122,21 +132,17 @@ defmodule Carbonex do
   end
 
   defp send_data_to_renderer(
-         environment = %Environment{},
+         env = %Environment{},
          template_id,
          req_body = %RequestBody{}
        ) do
-    headers = [
-      {"Content-Type", "application/json"},
-      {"Authorization", "Bearer #{environment.token}"},
-      {"carbone-version", environment.version}
-    ]
+    headers = HttpHeaders.from_environment(env)
 
     body = RequestBody.to_json(req_body)
 
     case body do
       {:ok, value} ->
-        Finch.build(:post, "#{environment.base_uri}/render/#{template_id}", headers, value)
+        Finch.build(:post, "#{env.base_uri}/render/#{template_id}", headers, value)
         |> Finch.request(CarboneHttp)
 
       _ ->
@@ -150,5 +156,9 @@ defmodule Carbonex do
       {:ok, %{"data" => %{"renderId" => id}}} -> id
       _ -> nil
     end
+  end
+
+  defp to_file(data, file_name) do
+    File.write(file_name, data, [:write])
   end
 end

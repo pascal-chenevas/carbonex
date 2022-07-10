@@ -27,9 +27,10 @@ be found at <https://hexdocs.pm/carbonex>.
 # set up the API-Token to use against the service for authorization
 env = %Carbonex.Environment{token: "yor_token" }
 ```
+
+The "raw"-data that must be rendered [documentation](https://carbone.io/documentation.html#building-a-template)
+
 ```elixir
-# the "raw"-data that msut be rendered
-# check documentation: https://carbone.io/documentation.html#building-a-template
 data = %{}
 ```
 ```elixir
@@ -51,9 +52,14 @@ Carbonex.render(env, "template/sample_template.odt", req_body, "~/report.pdf")
 # References
 
 Carbone.io :  https://carbone.io
-How to build a template file: https://carbone.io/documentation.html#building-a-template
-Substitutions: https://carbone.io/documentation.html#substitutions
-Repetitions: https://carbone.io/documentation.html#repetitions
-Formatters: https://carbone.io/documentation.html#formatters
-Translations: https://carbone.io/documentation.html#translations
+
+- [How to build a template file](https://carbone.io/documentation.html#building-a-template)
+
+- [Substitutions](https://carbone.io/documentation.html#substitutions)
+
+- [Repetitions](https://carbone.io/documentation.html#repetitions)
+
+- [Formatters](https://carbone.io/documentation.html#formatters)
+
+- [Translations](https://carbone.io/documentation.html#translations)
 

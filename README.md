@@ -17,10 +17,6 @@ def deps do
 end
 ```
 
-Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
-and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
-be found at <https://hexdocs.pm/carbonex>.
-
 ## Usage
 
 ```elixir
@@ -28,7 +24,7 @@ be found at <https://hexdocs.pm/carbonex>.
 env = %Carbonex.Environment{token: "yor_token" }
 ```
 
-The "raw"-data that must be rendered [documentation](https://carbone.io/documentation.html#building-a-template)
+The "raw"-data that must be rendered ([documentation](https://carbone.io/documentation.html#building-a-template))
 
 ```elixir
 data = %{}
@@ -51,7 +47,9 @@ Carbonex.render(env, "template/sample_template.odt", req_body, "~/report.pdf")
 
 # References
 
-Carbone.io :  https://carbone.io
+[Carbone.io](https://carbone.io) a report generator.
+
+## Useful links
 
 - [How to build a template file](https://carbone.io/documentation.html#building-a-template)
 

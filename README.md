@@ -21,7 +21,7 @@ end
 
 ```elixir
 # set up the API-Token to use against the service for authorization
-env = %Carbonex.Environment{token: "yor_token" }
+env = %Carbonex.Environment{token: "your_token" }
 ```
 
 The "raw"-data that must be rendered ([documentation](https://carbone.io/documentation.html#building-a-template))

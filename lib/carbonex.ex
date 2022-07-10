@@ -24,6 +24,20 @@ defmodule Carbonex do
   end
 
   @doc """
+  render/4 render a document based on a givem template
+  and its data to a file 
+  """
+  def render(
+        env = %Environment{},
+        template_file_name,
+        request_body = %RequestBody{},
+        file_name
+      ) do
+    render(env, template_file_name, request_body)
+    |> to_file(file_name)
+  end
+
+  @doc """
   add_template/2 add a carbone template to the Carbone service
   """
   def add_template(env = %Environment{}, template_file_name) do
@@ -109,16 +123,6 @@ defmodule Carbonex do
       true -> extract_id_from_response(response)
       false -> response
     end
-  end
-
-  def create_file(
-        env = %Environment{},
-        template_file_name,
-        request_body = %RequestBody{},
-        file_name
-      ) do
-    render(env, template_file_name, request_body)
-    |> to_file(file_name)
   end
 
   ## Private functions

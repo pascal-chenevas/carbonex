@@ -28,7 +28,8 @@ be found at <https://hexdocs.pm/carbonex>.
 env = %Carbonex.Environment{token: "yor_token" }
 ```
 ```elixir
-# 
+# the "raw"-data that msut be rendered
+# check documentation: https://carbone.io/documentation.html#building-a-template
 data = %{}
 ```
 ```elixir
@@ -41,9 +42,18 @@ req_body = %Carbonex.RequestBody{convert_to: "pdf", data: data}
 resp_content = Carbonex.render(env, "template/sample_template.odt", req_body)
 ```
 
-or if you want to directly save the content to a file
+or if you want directly to save the content to a file
 
 ```elixir
-Carbonex.create_file(env, "template/sample_template.odt", req_body, "~/report.pdf")
+Carbonex.render(env, "template/sample_template.odt", req_body, "~/report.pdf")
 ```
+
+# References
+
+Carbone.io :  https://carbone.io
+How to build a template file: https://carbone.io/documentation.html#building-a-template
+Substitutions: https://carbone.io/documentation.html#substitutions
+Repetitions: https://carbone.io/documentation.html#repetitions
+Formatters: https://carbone.io/documentation.html#formatters
+Translations: https://carbone.io/documentation.html#translations
 
